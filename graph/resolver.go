@@ -11,3 +11,9 @@ import (
 type Resolver struct{
 	Repo repository.Repository
 }
+
+func NewService(repo repository.Repository) *Resolver {
+    return &Resolver{
+        Repo: repo,
+    }
+}

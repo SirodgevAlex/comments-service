@@ -21,12 +21,13 @@ type Comment {
 type Query {
   posts: [Post!]!
   post(id: Int!): Post
-  comments(postId: Int!, after: String, first: Int): [Comment!]!
+  comments(postId: Int!, after: Int, first: Int): [Comment!]!
 }
 
 type Mutation {
   createPost(title: String!, content: String!, authorId: Int!): Post
   createComment(postId: Int!, parentId: Int, authorId: Int!, content: String!): Comment
+  updatePostCommentsSettings(postId: Int!, authorId: Int!, commentsDisabled: Boolean!): Post
 }
 
 type Subscription {
