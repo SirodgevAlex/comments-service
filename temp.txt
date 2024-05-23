@@ -1,0 +1,21 @@
+mutation createPost {
+  createPost(title: "My First Post", content: "This is the content of my first post.", authorId: 1) {
+    id
+    title
+    content
+    authorId
+    commentsDisabled
+    createdAt
+  }
+}
+
+query findPosts{
+  posts {
+    id
+    title
+    content
+    authorId
+    commentsDisabled
+    createdAt
+  }
+}
