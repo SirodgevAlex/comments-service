@@ -1,4 +1,4 @@
-mutation createPost{
+mutation createPost {
   createPost(title: "New Post", content: "This is a new post", authorId: 1) {
     id
     title
@@ -9,7 +9,7 @@ mutation createPost{
   }
 }
 
-mutation createComment{
+mutation createComment {
   createComment(postId: 1, authorId: 1, content: "This is a new comment") {
     id
     postId
@@ -20,7 +20,34 @@ mutation createComment{
   }
 }
 
-mutation updatePostCommentsSettings{
+mutation createComment1 {
+  createComment(postId: 1, authorId: 1, content: "This is a new comment1") {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}
+
+mutation createComment2 {
+  createComment(
+    postId: 1
+    parentId: 2
+    authorId: 1
+    content: "This is a new comment"
+  ) {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}
+
+mutation updatePostCommentsSettings {
   updatePostCommentsSettings(postId: 1, authorId: 1, commentsDisabled: true) {
     id
     title

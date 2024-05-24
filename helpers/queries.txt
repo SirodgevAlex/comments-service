@@ -1,4 +1,4 @@
-query findPosts{
+query findPosts {
   posts {
     id
     title
@@ -9,7 +9,7 @@ query findPosts{
   }
 }
 
-query findPost{
+query findPost {
   post(id: 1) {
     id
     title
@@ -20,7 +20,7 @@ query findPost{
   }
 }
 
-query comments{
+query comments {
   comments(postId: 1) {
     id
     postId
@@ -30,3 +30,59 @@ query comments{
     createdAt
   }
 }
+
+query comments1 {
+  comments(postId: 1, after: 1) {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}
+
+query comments2 {
+  comments(postId: 1, after: 2) {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}
+
+query comments3 {
+  comments(postId: 1, first: 1) {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}
+
+query comments4 {
+  comments(postId: 1, first: 2) {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}
+
+query comments5 {
+  comments(postId: 1, after: 1, first: 2) {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}
+
