@@ -1,0 +1,32 @@
+query findPosts{
+  posts {
+    id
+    title
+    content
+    authorId
+    commentsDisabled
+    createdAt
+  }
+}
+
+query findPost{
+  post(id: 1) {
+    id
+    title
+    content
+    authorId
+    commentsDisabled
+    createdAt
+  }
+}
+
+query comments{
+  comments(postId: 1) {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}

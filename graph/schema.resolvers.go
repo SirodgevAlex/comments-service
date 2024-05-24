@@ -14,7 +14,6 @@ import (
 
 // CreatePost is the resolver for the createPost field.
 func (r *mutationResolver) CreatePost(ctx context.Context, title string, content string, authorID int) (*model.Post, error) {
-	// Create a new Post instance
 	post := &model.Post{
 		Title:            title,
 		Content:          content,
@@ -23,7 +22,6 @@ func (r *mutationResolver) CreatePost(ctx context.Context, title string, content
 		CreatedAt:        time.Now(),
 	}
 
-	// Save the post using repository
 	savedPost, err := r.Repo.SavePost(ctx, post)
 	if err != nil {
 		return nil, err
@@ -34,54 +32,59 @@ func (r *mutationResolver) CreatePost(ctx context.Context, title string, content
 
 // CreateComment is the resolver for the createComment field.
 func (r *mutationResolver) CreateComment(ctx context.Context, postID int, parentID *int, authorID int, content string) (*model.Comment, error) {
-	// Проверяем длину текста комментария
 	if len(content) > maxCommentLength {
 		return nil, fmt.Errorf("comment length exceeds the maximum allowed length of %d characters", maxCommentLength)
 	}
 
-	// Проверяем, существует ли родительский комментарий
-	// if parentID != nil {
-	// 	parentComment, err := r.Repo.GetCommentsByID(ctx, *parentID)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	if parentComment == nil {
-	// 		return nil, fmt.Errorf("parent comment not found")
-	// 	}
-	// }
+	post, err := r.Repo.GetPost(ctx, postID)
+	if err != nil {
+		return nil, err
+	}
+	if post == nil {
+		return nil, fmt.Errorf("post not found")
+	}
 
-	// Создаем новый комментарий
-	newComment := &model.Comment{
-		PostID:    postID,
-		ParentID:  parentID,
-		AuthorID:  authorID,
-		Content:   content,
+	if post.CommentsDisabled {
+		return nil, fmt.Errorf("comments are disabled for this post")
+	}
+
+	if parentID != nil {
+		parentComment, err := r.Repo.GetComment(ctx, *parentID)
+		if err != nil {
+			return nil, err
+		}
+		if parentComment == nil {
+			return nil, fmt.Errorf("parent comment not found")
+		}
+	}
+
+	comment := &model.Comment{
+		PostID:   postID,
+		ParentID: parentID,
+		AuthorID: authorID,
+		Content:  content,
 		CreatedAt: time.Now(),
 	}
 
-	// Сохраняем новый комментарий
-	savedComment, err := r.Repo.SaveComment(ctx, newComment)
+	createdComment, err := r.Repo.SaveComment(ctx, comment)
 	if err != nil {
 		return nil, err
 	}
 
-	return savedComment, nil
+	return createdComment, nil
 }
 
 // UpdatePostCommentsSettings is the resolver for the updatePostCommentsSettings field.
 func (r *mutationResolver) UpdatePostCommentsSettings(ctx context.Context, postID int, authorID int, commentsDisabled bool) (*model.Post, error) {
-    // Получаем пост по его ID
     post, err := r.Repo.GetPost(ctx, postID)
     if err != nil {
         return nil, err
     }
 
-    // Проверяем, соответствует ли автор ID автору поста
     if post.AuthorID != authorID {
         return nil, fmt.Errorf("user %d is not the author of post %d", authorID, postID)
     }
 
-    // Обновляем настройки комментариев для поста
     updatedPost, err := r.Repo.UpdatePostCommentsSettings(ctx, postID, commentsDisabled)
     if err != nil {
         return nil, err
@@ -98,7 +101,11 @@ func (r *queryResolver) Posts(ctx context.Context) ([]*model.Post, error) {
 
 // Post is the resolver for the post field.
 func (r *queryResolver) Post(ctx context.Context, id int) (*model.Post, error) {
-	panic(fmt.Errorf("not implemented: Post - post"))
+	post, err := r.Repo.GetPost(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
 }
 
 // Comments is the resolver for the comments field.

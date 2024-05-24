@@ -4,47 +4,58 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/SirodgevAlex/comments-service/graph"
-	"github.com/SirodgevAlex/comments-service/graph/model"
 	"github.com/SirodgevAlex/comments-service/repository"
 )
 
 const defaultPort = "8080"
 
 func main() {
-	// Проверяем наличие аргумента командной строки для базы данных
 	useDatabase := false
 	if len(os.Args) > 1 && os.Args[1] == "db" {
 		useDatabase = true
 	}
 
-	// Создаем репозиторий в зависимости от выбора
 	var repo repository.Repository
 	if useDatabase {
-		// Инициализируйте репозиторий базы данных здесь
-	} else {
-		repo = &repository.InMemoryRepository{
-			Posts:     make(map[int]*model.Post),
-			Comments:  make(map[int][]*model.Comment),
-			IDCounter: 0,
+		connStr := "postgres://postgres:1234@host.docker.internal:5432/comments-system?sslmode=disable"
+		var err error
+		repo, err = repository.NewPostgresRepository(connStr)
+		if err != nil {
+			log.Fatalf("Failed to create PostgreSQL repository: %v", err)
 		}
+	} else {
+		repo = repository.NewInMemoryRepository()
 	}
 
-	// Используем репозиторий в сервисе
 	service := graph.NewService(repo)
 
-	// Инициализируем сервер GraphQL
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: service}))
 
-	// Настройка обработчиков маршрутов
 	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	http.Handle("/query", srv)
 
-	// Запуск сервера на порту 8080
 	port := defaultPort
 	log.Printf("Connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	
+	go func() {
+		if err := http.ListenAndServe(":"+port, nil); err != nil {
+			log.Fatalf("Server error: %v", err)
+		}
+	}()
+
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+	<-stop
+
+	if useDatabase {
+		repository.ClosePostgresRepository(repo.(*repository.PostgresRepository).DB)
+	}
+
+	log.Println("Server gracefully stopped")
 }

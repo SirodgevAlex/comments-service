@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS posts (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    author_id INTEGER NOT NULL,
+    comments_disabled BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);

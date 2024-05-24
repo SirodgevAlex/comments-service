@@ -1,0 +1,32 @@
+mutation createPost{
+  createPost(title: "New Post", content: "This is a new post", authorId: 1) {
+    id
+    title
+    content
+    authorId
+    commentsDisabled
+    createdAt
+  }
+}
+
+mutation createComment{
+  createComment(postId: 1, authorId: 1, content: "This is a new comment") {
+    id
+    postId
+    parentId
+    authorId
+    content
+    createdAt
+  }
+}
+
+mutation updatePostCommentsSettings{
+  updatePostCommentsSettings(postId: 1, authorId: 1, commentsDisabled: true) {
+    id
+    title
+    content
+    authorId
+    commentsDisabled
+    createdAt
+  }
+}
